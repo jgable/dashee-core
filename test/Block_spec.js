@@ -71,6 +71,8 @@ describe("Block", function () {
                 return done();
             };
 
+            this.on = sandbox.stub();
+
             sandbox.spy(this, "start");
         };
 
@@ -81,7 +83,7 @@ describe("Block", function () {
         // Some hacking here for the multi argument call checks
         service3.start.restore();
         service3.start = function (dashee, config, done) {
-            return done();
+            return done(null, service3);
         };
         sandbox.spy(service3, "start");
 
