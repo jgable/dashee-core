@@ -1,9 +1,11 @@
 /* global describe, beforeEach, afterEach, it */
 
-var should = require('should'),
+var _ = require('lodash'),
+    should = require('should'),
     sinon = require('sinon');
 
-var DasheeBlock = require("../lib/Block/Block");
+var DasheeBlock = require("../lib/Block/Block"),
+    DasheeService = require('../lib/Service/Service');
 
 describe("Block", function () {
     var sandbox,
@@ -11,6 +13,12 @@ describe("Block", function () {
         dasheeFake,
         fakeConfig,
         block;
+
+    var FakeService = function () {
+        DasheeService.call(this, dasheeFake, fakeConfig);
+    };
+
+    _.extend(FakeService.prototype, DasheeService.prototype);
     
     should.exist(DasheeBlock);
 
@@ -20,7 +28,9 @@ describe("Block", function () {
         dasheeFake = {
             addAssetPaths: function (path, done) {
                 return done();
-            }
+            },
+
+            pushData: sandbox.stub()
         };
 
         fakeConfig = {
@@ -65,25 +75,16 @@ describe("Block", function () {
     });
 
     it("calls load service for each service", function (done) {
-        var FakeService = function () {
-            this.start = function (done) {
-                return done();
-            };
-
-            this.on = sandbox.stub();
-
-            sandbox.spy(this, "start");
-        };
-
         var service1 = new FakeService(),
             service2 = new FakeService(),
             service3 = new FakeService();
 
         // Some hacking here for the multi argument call checks
-        service3.start.restore();
         service3.start = function (dashee, config, done) {
             return done(null, service3);
         };
+        sandbox.spy(service1, "start");
+        sandbox.spy(service2, "start");
         sandbox.spy(service3, "start");
 
         block.services = [service1, service2, service3];
@@ -101,4 +102,26 @@ describe("Block", function () {
             done();
         });
     });
+
+    it("calls pushData when a service emits data", function (done) {
+        var service = new FakeService();
+
+        block.services = [service];
+
+        block.startServices(function (err) {
+            if (err) { throw err; }
+
+            block.dashee.pushData.called.should.equal(false);
+
+            var fakeData = { fake: true };
+
+            service.emit("data", fakeData);
+
+            block.dashee.pushData.calledWith(fakeData).should.equal(true);
+
+            done();
+        });
+    });
+
+    
 });
