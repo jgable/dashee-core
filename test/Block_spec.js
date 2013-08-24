@@ -18,13 +18,13 @@ describe("Block", function () {
         sandbox = sinon.sandbox.create();
 
         dasheeFake = {
-            addAssetPath: function (path, done) {
+            addAssetPaths: function (path, done) {
                 return done();
             }
         };
 
         fakeConfig = {
-
+            name: "test-block"
         };
 
         block = new DasheeBlock(dasheeFake, fakeConfig);
@@ -49,17 +49,16 @@ describe("Block", function () {
     });
 
     it("calls addAssetPath for each asset", function (done) {
-        sandbox.spy(dasheeFake, "addAssetPath");
+        sandbox.spy(dasheeFake, "addAssetPaths");
 
         block.assets = ["/some/path/1", "/other/path/1"];
 
         block.loadAssets(function (err) {
             if (err) { throw err; }
 
-            dasheeFake.addAssetPath.calledTwice.should.equal(true);
+            dasheeFake.addAssetPaths.calledOnce.should.equal(true);
 
-            dasheeFake.addAssetPath.calledWith(block.assets[0]).should.equal(true);
-            dasheeFake.addAssetPath.calledWith(block.assets[1]).should.equal(true);
+            dasheeFake.addAssetPaths.calledWith(block.assets).should.equal(true);
 
             done();
         });
