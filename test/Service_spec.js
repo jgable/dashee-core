@@ -24,18 +24,14 @@ describe("Service", function () {
         sandbox = sinon.sandbox.create();
 
         fakeDashee = {
-            get: function () { },
-            post: function () { },
-            put: function () { }
+            get: sandbox.stub(),
+            post: sandbox.stub(),
+            put: sandbox.stub()
         };
 
         fakeConfig = {
             test: true
         };
-
-        sandbox.spy(fakeDashee, "get");
-        sandbox.spy(fakeDashee, "post");
-        sandbox.spy(fakeDashee, "put");
     });
 
     afterEach(function () {
